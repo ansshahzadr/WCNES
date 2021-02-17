@@ -10,7 +10,6 @@
 
 
 #define TIMER1 CLOCK_SECOND/100
-#define TIMER2 CLOCK_SECOND
 
 /* Declare our "main" process, the client process*/
 PROCESS(client_process, "Clicker client");
@@ -22,7 +21,7 @@ AUTOSTART_PROCESSES(&client_process);
 
 static int payload_accel;
 static char payload;
-static struct etimer timer1, timer2;
+static struct etimer timer1;
 int x = 0;
 
 /* Callback function for received packets.
@@ -49,8 +48,7 @@ PROCESS_THREAD(client_process, ev, data) {
 	while (1) {
 		//printf("inside while loop\n");
 		etimer_set(&timer1, CLOCK_SECOND);
-		etimer_set(&timer2, CLOCK_SECOND*10);
-
+		
 
 		/*set timer to 100Hz freq*/
         /*wait for the timer to expire or button to be pressed*/
@@ -77,20 +75,13 @@ PROCESS_THREAD(client_process, ev, data) {
 			leds_toggle(LEDS_GREEN);	
 		}
 
-		PROCESS_WAIT_EVENT_UNTIL((etimer_expired(&timer2)) || (ev == sensors_event));
-
 		if ( x == 1 && ev == sensors_event && data == &button_sensor){
 			payload = '3';
 			leds_off(LEDS_ALL);
 			leds_toggle(LEDS_BLUE);	
 		}
-		else if (ev == sensors_event && data == &button_sensor){
-			payload = '2';
-			leds_off(LEDS_ALL);
-			leds_toggle(LEDS_GREEN);	
-		}
 
-		//printf("payload is %c\n", payload);
+		printf("payload is %c\n", payload);
 
 		if (payload !='0'){				
 		/* Initialize NullNet */
