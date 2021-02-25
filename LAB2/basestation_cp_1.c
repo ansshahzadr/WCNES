@@ -52,9 +52,9 @@ static void recv(const void *data, uint16_t len,
     if ((pack[0] == '3')){  //turn on LED 1 and 2 and 3 if accelerometer is shaken and button is pressed at the same time 
         //printf("LED 3\n");
         leds_off(LEDS_ALL);
-        leds_on(0b0110);
+        leds_on(0b0100);
     }
-    
+
 /* Polling the led process everytime a packet is received*/
     process_poll(&led_process);
 }
@@ -85,7 +85,7 @@ PROCESS_THREAD(led_process, ev, data) {
             etimer_reset(&timer);   
             if (pack[0] == '2'&&  temp == '1'){     //if prev state was 1 and new state is 2 and time lapsed is < 10 secs, raise alarm
             leds_off(LEDS_ALL);
-            leds_on(0b0011);
+            leds_on(0b0100);
             //printf("button pressed after shaking \n");
         }
     }
