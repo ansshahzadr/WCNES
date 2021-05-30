@@ -12,7 +12,8 @@
 static struct etimer timer;
 int count=0;
 char pack[1];
-char temp = 100;
+bool axxel;
+bool button;
 
 
 
@@ -34,25 +35,20 @@ AUTOSTART_PROCESSES(&basestation_process, &led_process);
 */
 static void recv(const void *data, uint16_t len,
   const linkaddr_t *src, const linkaddr_t *dest) {
-    count++; 
     memcpy(&pack, data, sizeof(count));
-    puts(pack);
-    
+    puts(pack);    
     
     if ((pack[0] == '1')){     //turn on LED 1 if accelerometer is shaken 
         //printf("LED 1\n");
         leds_off(LEDS_ALL);
         leds_on(0b0001);
+        axxel = true;
     }
     if ((pack[0] == '2')){  //turn on LED 2 if butto is pressed is shaken 
         //printf("LED 2\n");
         leds_off(LEDS_ALL);
         leds_on(0b0010);
-    }
-    if ((pack[0] == '3')){  //turn on LED 1 and 2 and 3 if accelerometer is shaken and button is pressed at the same time 
-        //printf("LED 3\n");
-        leds_off(LEDS_ALL);
-        leds_on(0b0100);
+        button = true;
     }
 
 /* Polling the led process everytime a packet is received*/
@@ -72,24 +68,21 @@ PROCESS_THREAD(basestation_process, ev, data) {
 PROCESS_THREAD(led_process, ev, data) {    
     PROCESS_BEGIN();
     while(1){
-        //printf("polled\n");
         /* setting timer with a period of 10 secs */
         etimer_set(&timer, CLOCK_SECOND * 10);
         /* Wait for timer to expire or packet to arrive which polls this process*/
         PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer) || ev == PROCESS_EVENT_POLL);
-        if (etimer_expired(&timer)){ //if timer expires, turn off the LEDs
+        if (etimer_expired(&timer)){ //if timer expires, turn off the LEDs and turn off axxel and button flag
             leds_off(LEDS_ALL);
-          //  printf("TIMER EXPIRED LEDs turned off\n");
+            axxel = false;
+            button = false;
         }      
-        else{                     //else just reset the timer
-            etimer_reset(&timer);   
-            if (pack[0] == '2'&&  temp == '1'){     //if prev state was 1 and new state is 2 and time lapsed is < 10 secs, raise alarm
+        else{               //else, raise an alarm if axxel and button both are 1
+            if (axxel == true && button == true){
             leds_off(LEDS_ALL);
             leds_on(0b0100);
-            //printf("button pressed after shaking \n");
         }
     }
-       temp = pack[0]; //storing old state to compare with 
 }
 
     PROCESS_END();

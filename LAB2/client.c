@@ -8,9 +8,6 @@
 #include "net/nullnet/nullnet.h"
 #include "dev/adxl345.h"
 
-
-#define TIMER1 CLOCK_SECOND/100
-
 /* Declare our "main" process, the client process*/
 PROCESS(client_process, "Clicker client");
 
@@ -46,12 +43,10 @@ PROCESS_THREAD(client_process, ev, data) {
 
 	/* Loop forever. */
 	while (1) {
-		//printf("inside while loop\n");
-		etimer_set(&timer1, CLOCK_SECOND);
-		
+		/*set timer to 10Hz freq*/        
+		etimer_set(&timer1, CLOCK_SECOND/10);
 
-		/*set timer to 100Hz freq*/
-        /*wait for the timer to expire or button to be pressed*/
+		/*wait for the timer to expire or button to be pressed*/
 		PROCESS_WAIT_EVENT_UNTIL((etimer_expired(&timer1)) || (ev == sensors_event));
         
         x = 0;
@@ -67,22 +62,13 @@ PROCESS_THREAD(client_process, ev, data) {
 			leds_off(LEDS_ALL);
     		leds_on(LEDS_RED);	
 		}
-		//printf("accel is %i\n",payload_accel );
-
+		
 		if (ev == sensors_event && data == &button_sensor){
 			payload = '2';
 			leds_off(LEDS_ALL);
 			leds_toggle(LEDS_GREEN);	
 		}
-
-		if ( x == 1 && ev == sensors_event && data == &button_sensor){
-			payload = '3';
-			leds_off(LEDS_ALL);
-			leds_toggle(LEDS_BLUE);	
-		}
-
-		printf("payload is %c\n", payload);
-
+		
 		if (payload !='0'){				
 		/* Initialize NullNet */
 		nullnet_buf = (uint8_t *)&payload;
